@@ -1,0 +1,50 @@
+
+
+div.container
+{
+    margin: auto;
+    width: 50%;
+    border: 1px solid black;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+table {
+    border: 3px solid black;
+    margin: auto;
+    width: 50%;
+}
+
+tr, td {
+    border: 1px solid black;
+}
+
+.container img
+{
+
+    max-height: 100%;
+    max-width: 100%;
+}
+
+h1
+{
+    text-align: center;
+}
+
+div.refs
+{
+    font-size: 1.3rem;
+}
+
+.container.form div
+{
+    margin-bottom: 0.5rem;
+}
+
+div.row {
+    border: 3px solid balck;
+}
+
+div.col {
+    border: 3px solid black;
+}

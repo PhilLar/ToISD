@@ -1,0 +1,12 @@
+{{define "product"}}
+    {{range .Products}}
+        <div class="product">
+            <h2>{{.Title}}</h2>
+            <p>{{.Descr}}</p>
+            <p>{{.Price}}</p>
+            <form method="POST">
+                <input type="submit" value="Send"/>
+            </form>
+        </div>
+    {{end}}
+{{end}}

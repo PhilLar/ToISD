@@ -1,0 +1,45 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/styles.css">
+    <link rel="stylesheet" href="../static/bootstrap.css">
+    <title>TEST_TITLE</title>
+</head>
+<body>
+    <section>
+    <div class="container">
+        <h1>Sed ut Ipsum <br> ed ut perspiciatis unde omnis iste natus e</h1>
+        <div class="refs">
+            {{template "div" .}}
+        </div>
+    </div>
+</section>
+<section class="products">  
+    <div class="container">
+            <ul>
+                <div class="col">{{template "product" .}}</div>
+            </ul>
+        <!-- <div class="row">
+            <div class="col">{{template "product" .}}</div>
+            <div class="col">{{template "product" .}}</div>
+            <div class="col">{{template "product" .}}</div>
+        </div>
+        <div class="row">
+            <div class="col">{{template "product" .}}</div>
+            <div class="col">{{template "product" .}}</div>
+            <div class="col">{{template "product" .}}</div>
+        </div>
+        <div class="row">
+            <div class="col">{{template "product" .}}</div>
+            <div class="col">{{template "product" .}}</div>
+            <div class="col">{{template "product" .}}</div>
+        </div> -->
+    </div>
+</section>
+</body>
+</html>
+{{end}}
