@@ -12,32 +12,13 @@
 <body>
     <section>
     <div class="container">
-        <h1>Sed ut Ipsum <br> ed ut perspiciatis unde omnis iste natus e</h1>
-        <div class="refs">
-            {{template "div" .}}
-        </div>
+        <h1>Sed ut Ipsum</h1>
+        <p>You logged as <b>{{.User.Name}}</b></p>
     </div>
 </section>
 <section class="products">  
-    <div class="container">
-            <ul>
-                <div class="col">{{template "product" .}}</div>
-            </ul>
-        <!-- <div class="row">
-            <div class="col">{{template "product" .}}</div>
-            <div class="col">{{template "product" .}}</div>
-            <div class="col">{{template "product" .}}</div>
-        </div>
-        <div class="row">
-            <div class="col">{{template "product" .}}</div>
-            <div class="col">{{template "product" .}}</div>
-            <div class="col">{{template "product" .}}</div>
-        </div>
-        <div class="row">
-            <div class="col">{{template "product" .}}</div>
-            <div class="col">{{template "product" .}}</div>
-            <div class="col">{{template "product" .}}</div>
-        </div> -->
+    <div class="container showcase">
+        {{template "product" .}}
     </div>
 </section>
 </body>
