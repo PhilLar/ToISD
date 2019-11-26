@@ -16,9 +16,15 @@
         <p>You logged as <b>{{.User.Name}}</b></p>
     </div>
 </section>
-<section class="products">  
-    <div class="container showcase">
+<section class="main flex-row-container">  
+    <div class="container leftside flex-row-item">
+        {{template "info-left"}}
+    </div>
+    <div class="container showcase flex-row-item">
         {{template "product" .}}
+    </div>
+    <div class="container rightside flex-row-item">
+        {{template "info-right"}}
     </div>
 </section>
 </body>

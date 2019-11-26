@@ -3,40 +3,15 @@ package main
 import (
 	"html/template"
 	"net/http"
-	"strconv"
+	"github.com/PhilLar/ToISD/handlers"
 )
 
 //var tmpl *template.Template
 var tmpl = make(map[string]*template.Template)
-var products = make([]*Stock, 0)
+var products = make([]*handlers.Stock, 0)
 var bought = make(map[int]int)
-var user = User{Name: "Test_User"}
-
-type Data struct {
-	Products []*Stock
-	User     User
-}
-
-type Stock struct {
-	ID     int
-	Title  string
-	Descr  string
-	Price  int
-	Bought int
-}
-
-type User struct {
-	Name     string
-	Email    string
-	Address  string
-	Passport string
-	Phone    string
-}
-
-type EmailRecipient struct {
-	Name  string
-	Email string
-}
+var user = handlers.User{Name: "Test_User"}
+var userProducts = make([]*handlers.Stock, 0)
 
 func init() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
@@ -45,11 +20,11 @@ func init() {
 	tmpl["first.html"] = template.Must(template.ParseFiles("templates/first.html", "templates/layout.html"))
 	tmpl["footer.html"] = template.Must(template.ParseFiles("templates/footer.html", "templates/layout.html"))
 	tmpl["index-product"] = template.Must(template.ParseFiles("templates/product.html", "templates/layout.html", "templates/footer.html"))
+	tmpl["user-space"] = template.Must(template.ParseFiles("templates/userProduct.html", "templates/layout.html", "templates/userFeaturing.html"))
 	tmpl["index-product-bought-success"] = template.Must(template.ParseFiles("templates/product-bought-succes.html", "templates/layout.html", "templates/footer.html"))
 
-	products = make([]*Stock, 0)
 	for i := 0; i < 9; i++ {
-		stock := &Stock{
+		stock := &handlers.Stock{
 			ID:    i + 1,
 			Title: "Ubique",
 			Descr: "There goes description",
@@ -62,86 +37,9 @@ func init() {
 
 func main() {
 
-	http.HandleFunc("/", handler)
-	http.HandleFunc("/email", handlerEmail)
-	http.HandleFunc("/register", handlerRegister)
+	http.HandleFunc("/", handlers.HandlerIndex(tmpl, products, bought, user))
+	// http.HandleFunc("/email", handlerEmail)
+	// http.HandleFunc("/register", handlerRegister)
+	// http.HandleFunc("/user", handlerUserSpace)
 	http.ListenAndServe(":3000", nil)
-}
-
-func handlerEmail(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	var err error
-
-	if r.Method != http.MethodPost {
-		err = tmpl["email"].ExecuteTemplate(w, "emailForm", nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		return
-	}
-
-	details := EmailRecipient{
-		Email: r.FormValue("email"),
-		Name:  r.FormValue("name"),
-	}
-
-	_ = details
-
-	tmpl["email"].ExecuteTemplate(w, "emailForm", struct{ Success bool }{true})
-}
-
-func handlerRegister(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	var err error
-	if r.Method != http.MethodPost {
-		err = tmpl["register"].ExecuteTemplate(w, "registerForm", nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		return
-	}
-
-	details := User{
-		Email:    r.FormValue("email"),
-		Name:     r.FormValue("name"),
-		Address:  r.FormValue("address"),
-		Passport: r.FormValue("passport"),
-		Phone:    r.FormValue("phone"),
-	}
-
-	_ = details
-
-	tmpl["register"].ExecuteTemplate(w, "registerForm", struct{ Success bool }{true})
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	var err error
-	if r.Method == http.MethodPost {
-		ID, err := strconv.Atoi(r.FormValue("ID"))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		act := r.FormValue("submit")
-		if act == "Buy" {
-			bought[ID]++
-		} else if act == "Sell" && bought[ID] > 0 {
-			bought[ID]--
-		}
-	}
-	for _, prod := range products {
-		prod.Bought = bought[prod.ID]
-	}
-	data := Data{Products: products, User: user}
-	err = tmpl["index-product"].ExecuteTemplate(w, "layout", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	// if r.Method != http.MethodGet {
-	// 	err = tmpl["index-product-bought-success"].ExecuteTemplate(w, "layout", nil)
-	// 	if err != nil {
-	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	}
-	// }
 }
