@@ -4,11 +4,22 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/PhilLar/ToISD/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Data struct {
-	Products []*Stock
-	User     User
+	Products []*models.Stock
+	User     models.User
+}
+
+type UserStore interface {
+	InsertUser(user models.User) error
+}
+
+type Env struct {
+	Store UserStore
 }
 
 type Stock struct {
@@ -20,40 +31,104 @@ type Stock struct {
 	Amount int
 }
 
-type User struct {
-	Name     string
-	Email    string
-	Address  string
-	Passport string
-	Phone    string
-}
+// type User struct {
+// 	Name     string
+// 	Email    string
+// 	Address  string
+// 	Passport string
+// 	Phone    string
+// }
 
-type EmailRecipient struct {
-	Name  string
-	Email string
-}
+// type EmailRecipient struct {
+// 	Name  string
+// 	Email string
+// }
 
-func HandlerEmail(tmpl map[string]*template.Template) http.HandlerFunc {
+// func HandlerEmail(tmpl map[string]*template.Template) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		w.Header().Set("Content-Type", "text/html")
+// 		var err error
+
+// 		if r.Method != http.MethodPost {
+// 			err = tmpl["email"].ExecuteTemplate(w, "emailForm", nil)
+// 			if err != nil {
+// 				http.Error(w, err.Error(), http.StatusInternalServerError)
+// 			}
+// 			return
+// 		}
+
+// 		details := EmailRecipient{
+// 			Email: r.FormValue("email"),
+// 			Name:  r.FormValue("name"),
+// 		}
+
+// 		_ = details
+
+// 		tmpl["email"].ExecuteTemplate(w, "emailForm", struct{ Success bool }{true})
+// 	}
+// }
+
+func (env *Env) HandlerRegister(tmpl map[string]*template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		var err error
-
 		if r.Method != http.MethodPost {
-			err = tmpl["email"].ExecuteTemplate(w, "emailForm", nil)
+			err = tmpl["register"].ExecuteTemplate(w, "registerForm", nil)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			return
 		}
 
-		details := EmailRecipient{
-			Email: r.FormValue("email"),
-			Name:  r.FormValue("name"),
+		hash_password, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		_ = details
+		err = env.Store.InsertUser(models.User{
+			Email:    r.FormValue("email"),
+			Name:     r.FormValue("name"),
+			Address:  r.FormValue("address"),
+			Password: string(hash_password),
+			Phone:    r.FormValue("phone"),
+		})
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+		}
 
-		tmpl["email"].ExecuteTemplate(w, "emailForm", struct{ Success bool }{true})
+		tmpl["register"].ExecuteTemplate(w, "registerForm", struct{ Success bool }{true})
+	}
+}
+
+func (env *Env) HandlerLogin(tmpl map[string]*template.Template) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		var err error
+		if r.Method != http.MethodPost {
+			err = tmpl["login"].ExecuteTemplate(w, "loginForm", nil)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			return
+		}
+
+		hash_password, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		err = env.Store.InsertUser(models.User{
+			Email:    r.FormValue("email"),
+			Name:     r.FormValue("name"),
+			Address:  r.FormValue("address"),
+			Password: string(hash_password),
+			Phone:    r.FormValue("phone"),
+		})
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+		}
+
+		tmpl["register"].ExecuteTemplate(w, "registerForm", struct{ Success bool }{true})
 	}
 }
 
@@ -133,7 +208,7 @@ func HandlerEmail(tmpl map[string]*template.Template) http.HandlerFunc {
 // 	}
 // }
 
-func HandlerIndex(tmpl map[string]*template.Template, products []*Stock, bought map[int]int, user User) http.HandlerFunc {
+func HandlerIndex(tmpl map[string]*template.Template, products []*models.Stock, bought map[int]int, user models.User) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		var err error

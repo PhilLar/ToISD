@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS stocks_bought
+(
+  id        SERIAL PRIMARY KEY,
+  user_id   INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  stock_id  INTEGER NOT NULL REFERENCES stocks (id) ON DELETE CASCADE
+);
