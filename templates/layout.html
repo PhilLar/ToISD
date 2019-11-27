@@ -1,0 +1,32 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/styles.css">
+    <link rel="stylesheet" href="../static/bootstrap.css">
+    <title>TEST_TITLE</title>
+</head>
+<body>
+    <section>
+    <div class="container">
+        <h1>Sed ut Ipsum</h1>
+        <p>You logged as <b>{{.User.Name}}</b></p>
+    </div>
+</section>
+<section class="main flex-row-container">  
+    <div class="container leftside flex-row-item">
+        {{template "info-left"}}
+    </div>
+    <div class="container showcase flex-row-item">
+        {{template "product" .}}
+    </div>
+    <div class="container rightside flex-row-item">
+        {{template "info-right"}}
+    </div>
+</section>
+</body>
+</html>
+{{end}}

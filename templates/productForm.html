@@ -1,0 +1,18 @@
+{{define "productForm"}}
+    {{if .Success}}
+        <h1>Thanx! Your stock is available on our exchange now!</h1>
+    {{else}}
+        <h1>Emit your own stock now!</h1>
+        <form method="POST">
+            <label>Title:</label><br />
+            <input type="text" name="stock-title"><br />
+            <label>Description:</label><br />
+            <input type="text" name="stock-descr"><br />
+            <label>Price:</label><br />
+            <input type="text" name="stock-price"><br />
+            <label>Amount:</label><br />
+            <input type="text" name="stock-amount"><br />
+            <input type="submit">
+        </form>
+    {{end}}
+{{end}}

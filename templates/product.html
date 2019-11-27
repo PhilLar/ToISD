@@ -1,0 +1,16 @@
+{{define "product"}}
+    {{range .Products}}
+        <div class="item">
+            <h2>{{.Title}}</h2>
+            <p>{{.Descr}}</p>
+            <p>Price: {{.Price}}</p>
+            <form method="POST">
+                <input type="hidden" name="ID" value={{.ID}}><br />
+                <input type="submit" name="submit" value="Buy"/>
+                <input type="submit" name="submit" value="Sell"/>
+            </form>
+            <p>You own {{.Bought}} stocks of such type</p>
+        </div>
+    {{end}}
+{{end}}
+
