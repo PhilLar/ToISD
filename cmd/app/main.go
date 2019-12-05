@@ -1,59 +1,75 @@
 package main
 
 import (
-	"html/template"
+	"flag"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
-	"github.com/PhilLar/ToISD/handlers"
 	"github.com/PhilLar/ToISD/models"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	server "github.com/PhilLar/ToISD/http"
+	"github.com/go-chi/cors"
 )
 
-//var tmpl *template.Template
-var tmpl = make(map[string]*template.Template)
-var products = make([]*models.Stock, 0)
-var bought = make(map[int]int)
-var user = models.User{Name: "Test_User"}
-var userProducts = make([]*handlers.Stock, 0)
+var port int
+var db string
+
 
 func init() {
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-	tmpl["email"] = template.Must(template.ParseFiles("templates/emailForm.html"))
-	tmpl["register"] = template.Must(template.ParseFiles("templates/registerForm.html"))
-	tmpl["login"] = template.Must(template.ParseFiles("templates/loginForm.html"))
-	tmpl["first.html"] = template.Must(template.ParseFiles("templates/first.html", "templates/layout.html"))
-	tmpl["footer.html"] = template.Must(template.ParseFiles("templates/footer.html", "templates/layout.html"))
-	tmpl["index-product"] = template.Must(template.ParseFiles("templates/product.html", "templates/layout.html", "templates/footer.html"))
-	tmpl["user-space"] = template.Must(template.ParseFiles("templates/userProduct.html", "templates/layout.html", "templates/userFeaturing.html"))
-	tmpl["index-product-bought-success"] = template.Must(template.ParseFiles("templates/product-bought-succes.html", "templates/layout.html", "templates/footer.html"))
-
-	for i := 0; i < 9; i++ {
-		stock := &models.Stock{
-			ID:    i + 1,
-			Title: "Ubique",
-			Descr: "There goes description",
-			Price: i + 10,
+	defPort := 3333
+	var defDB string
+	if portVar, ok := os.LookupEnv("PORT"); ok {
+		if portValue, err := strconv.Atoi(portVar); err == nil {
+			defPort = portValue
 		}
-		products = append(products, stock)
-		bought[stock.ID] = 0
 	}
+	if dbVar, ok := os.LookupEnv("DATABASE_URL"); ok {
+		defDB = dbVar
+	}
+	flag.IntVar(&port, "port", defPort, "port to listen on")
+	flag.StringVar(&db, "db", defDB, "database to connect to")
 }
 
 func main() {
 
-	db := "xxx"
-	dbPsql, err := models.NewDB(db, "")
+	dbPsql, err := models.NewDB("postgres://store_user:store_password@localhost/store?sslmode=disable", "")
 	if err != nil {
 		log.Panic(err)
 	}
 	defer dbPsql.Close()
 
-	env := &handlers.Env{Store: &models.Store{DB: dbPsql}}
+	env := &server.Env{Store: &models.Store{DB: dbPsql}}
 
-	http.HandleFunc("/", handlers.HandlerIndex(tmpl, products, bought, user))
-	// http.HandleFunc("/email", handlerEmail)
-	http.HandleFunc("/register", env.HandlerRegister(tmpl))
-	http.HandleFunc("/login", env.HandlerLogin(tmpl))
-	// http.HandleFunc("/user", handlerUserSpace)
-	http.ListenAndServe(":3000", nil)
+	r := chi.NewRouter()
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	})
+
+	// r.With(middleware.AllowContentType("application/sql")).Post("/newsfeed", handlers.NewsfeedPost(feed))
+	// r.With(middleware.AllowContentType("application/json")).Post("/newsfeedRIGHT", handlers.NewsfeedPost(feed))
+
+	r.Use(cors.Handler)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.RealIP)
+
+	// without auth
+	r.Post("/auth/register", env.RegisterUser)
+	r.Post("/auth/login", env.AuthUser)
+	// with auth
+	// r.Get("/auth/logout", env.LogoutUser)
+	// r.Route("/stocks", func(r chi.Router) {
+	// 	r.Get("/", env.HandlerLogin().GetUserItems)
+	// 	r.Get("/{ID}", env.GetSingleUserItem)
+	// 	r.Post("/", env.CreateUserItem)
+	// })
+
+	http.ListenAndServe(":"+strconv.Itoa(port), r)
 }
